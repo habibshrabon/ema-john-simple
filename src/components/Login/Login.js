@@ -2,7 +2,7 @@
 import { useContext, useState } from "react";
 import { UserContext } from "../../App";
 import { useHistory, useLocation } from "react-router";
-import { handelFbSignIn, handelGoogleSignIn, handelSignOut, initializeLoginInFramework } from "./LoginManager";
+import { createUserWithEmailAndPassword, handelFbSignIn, handelGoogleSignIn, handelSignOut, initializeLoginInFramework, signInWithEmailAndPassword } from "./LoginManager";
 
 
 
@@ -27,18 +27,14 @@ function Login() {
   const googleSignIn = () =>{
       handelGoogleSignIn() 
       .then(res => {
-        setUser(res);
-        setLoggedInUser(res);
-        history.replace(from);
+        handelResponse(res, true);
       })
   }
 
   const fbSignIn = () =>{
     handelFbSignIn()
     .then(res =>{
-        setUser(res);
-        setLoggedInUser(res);
-        history.replace(from);
+        handelResponse(res, true);
     })
     
 }
@@ -46,13 +42,17 @@ function Login() {
   const signOut = () =>{
       handelSignOut()
       .then(res =>{
-          setUser(res);
-          setLoggedInUser(res);
+          handelResponse(res, false)
       })
   }
 
-  
-
+  const handelResponse = (res, redirect) => {
+    setUser(res);
+    setLoggedInUser(res);
+    if(redirect){
+        history.replace(from);
+    }
+  }
 
   const handelBlur = (event) =>{
     // console.log(event.target.name, event.target.value);
@@ -76,13 +76,18 @@ function Login() {
   const handelSubmit = (event) =>{
     // console.log(user.email, user.password);
     if(newUser && user.email && user.password){
-      
+      createUserWithEmailAndPassword(user.name, user.email, user.password)
+      .then(res => {
+        handelResponse(res, true);
+      })
     }
 
     if(!newUser && user.email && user.password){
-      
+      signInWithEmailAndPassword(user.email, user.password)
+      .then(res => {
+        handelResponse(res, true);
+      })
     }
-
     event.preventDefault();
   }
 
